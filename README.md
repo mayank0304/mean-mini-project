@@ -12,31 +12,24 @@ A simple chat application that connects to a local Ollama LLM model using Expres
 
 ```
 mean-mini-project/
-├── backend/
-│   ├── server.js
-│   └── package.json
-└── frontend/
-    ├── index.html
-    └── app.js
+├── public/
+│   ├── index.html
+│   └── app.js
+├── server.js
+├── package.json
+└── package-lock.json
 ```
 
 ## Setup and Running
 
-### 1. Start the Backend Server
+### Start the Application
 
 ```bash
-cd backend
 npm install
 node server.js
 ```
 
-The backend server will start on http://localhost:3000
-
-### 2. Open the Frontend
-
-Simply open the `frontend/index.html` file in your web browser. You can do this by:
-- Double-clicking the file
-- Using a local server (e.g., `python -m http.server` or `npx http-server`)
+The application will start on http://localhost:3000. Simply open this URL in your web browser to access the chat interface.
 
 ### 3. Using the Chat Interface
 

@@ -1,0 +1,77 @@
+<!doctype html>
+<html ng-app="chatApp">
+    <head>
+        <title>Ollama Chat</title>
+        <style>
+            body {
+                display: grid;
+                place-items: center;
+                min-height: 100vh;
+                overflow: hidden;
+            }
+            .chat-container {
+                width: 800px;
+            }
+            .chat-history {
+                height: 600px;
+                overflow-y: auto;
+                border: 1px solid #ccc;
+                padding: 10px;
+            }
+            .message {
+                margin: 10px 0;
+                padding: 10px;
+                border-radius: 5px;
+                white-space: pre-wrap;
+            }
+            .user-message {
+                background: #007bff;
+                color: white;
+                margin-left: 20%;
+            }
+            .ai-message {
+                background: #f0f0f0;
+                margin-right: 20%;
+            }
+            .input-area {
+                margin-top: 10px;
+                display: flex;
+                gap: 10px;
+            }
+            input {
+                flex-grow: 1;
+                padding: 8px;
+            }
+            button {
+                padding: 8px 20px;
+            }
+        </style>
+    </head>
+    <body ng-controller="ChatController as chat">
+        <div class="chat-container">
+            <div class="chat-history">
+                <div
+                    ng-repeat="msg in chat.messages"
+                    class="message"
+                    ng-class="msg.role === 'user' ? 'user-message' : 'ai-message'"
+                >
+                    {{msg.content}}
+                </div>
+            </div>
+
+            <form ng-submit="chat.sendMessage()" class="input-area">
+                <input
+                    ng-model="chat.input"
+                    placeholder="Type a message..."
+                    ng-disabled="chat.loading"
+                />
+                <button type="submit" ng-disabled="chat.loading">
+                    {{chat.loading ? 'Sending...' : 'Send'}}
+                </button>
+            </form>
+        </div>
+
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+        <script src="app.js"></script>
+    </body>
+</html>
