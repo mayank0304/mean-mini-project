@@ -22,7 +22,7 @@ app.use(express.static("public"));
 // Session middleware
 app.use(
   session({
-    secret: "your-secret-key",
+    secret: "1234",
     resave: false,
     saveUninitialized: false,
     store: MongoStore.create({
@@ -41,7 +41,7 @@ app.use("/api/chats", chatRoutes);
 app.post("/api/chat", async (req, res) => {
   try {
     const response = await axios.post("http://localhost:11434/api/chat", {
-      model: "llama3.2:3b",
+      model: "qwen2.5:1.5b",
       messages: req.body.messages,
       stream: false,
     });

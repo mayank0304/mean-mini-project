@@ -1,288 +1,357 @@
-<!doctype html>
+<!DOCTYPE html>
 <html ng-app="chatApp">
-    <head>
-        <title>Ollama Chat</title>
-        <style>
-            body {
-                display: grid;
-                place-items: center;
-                min-height: 100vh;
-                overflow: hidden;
-                font-family: Arial, sans-serif;
-            }
-            .app-container {
-                width: 1000px;
-                display: flex;
-                flex-direction: column;
-            }
-            .header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 10px;
-                margin-bottom: 10px;
-            }
-            .auth-container {
-                background: #f9f9f9;
-                padding: 20px;
-                border-radius: 5px;
-                margin-bottom: 20px;
-            }
-            .auth-tabs {
-                display: flex;
-                margin-bottom: 15px;
-            }
-            .auth-tab {
-                padding: 8px 15px;
-                cursor: pointer;
-                border-bottom: 2px solid transparent;
-            }
-            .auth-tab.active {
-                border-bottom: 2px solid #007bff;
-                font-weight: bold;
-            }
-            .form-group {
-                margin-bottom: 10px;
-            }
-            .form-group label {
-                display: block;
-                margin-bottom: 5px;
-            }
-            .main-content {
-                display: flex;
-                gap: 20px;
-            }
-            .sidebar {
-                min-width: 250px;
-                border: 1px solid #ccc;
-                padding: 10px;
-                border-radius: 5px;
-            }
-            .chat-list {
-                list-style: none;
-                padding: 0;
-                margin: 0;
-                max-height: 400px;
-                overflow-y: auto;
-            }
-            .chat-item {
-                padding: 8px;
-                cursor: pointer;
-                border-bottom: 1px solid #eee;
-            }
-            .chat-item:hover {
-                background: #f5f5f5;
-            }
-            .chat-item.active {
-                background: #e6f7ff;
-            }
-            .chat-container {
-                flex-grow: 1;
-            }
-            .chat-history {
-                height: 400px;
-                overflow-y: auto;
-                border: 1px solid #ccc;
-                padding: 10px;
-                border-radius: 5px;
-            }
-            .message {
-                margin: 10px 0;
-                padding: 10px;
-                border-radius: 5px;
-                white-space: pre-wrap;
-            }
-            .user-message {
-                background: #007bff;
-                color: white;
-                margin-left: 20%;
-            }
-            .ai-message {
-                background: #f0f0f0;
-                margin-right: 20%;
-            }
-            .input-area {
-                margin-top: 10px;
-                display: flex;
-                gap: 10px;
-            }
-            input,
-            button {
-                padding: 8px;
-            }
-            input {
-                flex-grow: 1;
-            }
-            button {
-                padding: 8px 20px;
-                background: #007bff;
-                color: white;
-                border: none;
-                border-radius: 4px;
-                cursor: pointer;
-            }
-            button:hover {
-                background: #0069d9;
-            }
-            button:disabled {
-                background: #cccccc;
-            }
-            .chat-actions {
-                display: flex;
-                justify-content: space-between;
-                margin-top: 10px;
-            }
-            .user-info {
-                display: flex;
-                align-items: center;
-                gap: 10px;
-            }
-        </style>
-    </head>
-    <body ng-controller="ChatController as chat">
-        <div class="app-container">
-            <div class="header">
-                <h1>Ollama Chat</h1>
-                <div class="user-info" ng-if="chat.user">
-                    <span>Welcome, {{chat.user.username}}!</span>
-                    <button ng-click="chat.logout()">Logout</button>
-                </div>
-            </div>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Ollama Chat</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
 
-            <!-- Authentication -->
-            <div class="auth-container" ng-if="!chat.user">
-                <div class="auth-tabs">
-                    <div
-                        class="auth-tab"
-                        ng-class="{'active': chat.authTab === 'login'}"
-                        ng-click="chat.authTab = 'login'"
-                    >
-                        Login
-                    </div>
-                    <div
-                        class="auth-tab"
-                        ng-class="{'active': chat.authTab === 'register'}"
-                        ng-click="chat.authTab = 'register'"
-                    >
-                        Register
-                    </div>
-                </div>
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        background: #f4f7fa;
+      }
 
-                <form ng-submit="chat.login()" ng-if="chat.authTab === 'login'">
-                    <div class="form-group">
-                        <label>Username</label>
-                        <input
-                            ng-model="chat.loginForm.username"
-                            type="text"
-                            required
-                        />
-                    </div>
-                    <div class="form-group">
-                        <label>Password</label>
-                        <input
-                            ng-model="chat.loginForm.password"
-                            type="password"
-                            required
-                        />
-                    </div>
-                    <button type="submit" ng-disabled="chat.authLoading">
-                        {{chat.authLoading ? 'Processing...' : 'Login'}}
-                    </button>
-                </form>
+      .app-container {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        width: 100%;
+      }
 
-                <form
-                    ng-submit="chat.register()"
-                    ng-if="chat.authTab === 'register'"
-                >
-                    <div class="form-group">
-                        <label>Username</label>
-                        <input
-                            ng-model="chat.registerForm.username"
-                            type="text"
-                            required
-                        />
-                    </div>
-                    <div class="form-group">
-                        <label>Password</label>
-                        <input
-                            ng-model="chat.registerForm.password"
-                            type="password"
-                            required
-                        />
-                    </div>
-                    <button type="submit" ng-disabled="chat.authLoading">
-                        {{chat.authLoading ? 'Processing...' : 'Register'}}
-                    </button>
-                </form>
-            </div>
+      .header {
+        background: #007bff;
+        color: white;
+        padding: 15px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
 
-            <div class="main-content" ng-if="chat.user">
-                <!-- Sidebar with chat history -->
-                <div class="sidebar">
-                    <button ng-click="chat.newChat()" class="new-chat-btn">
-                        New Chat
-                    </button>
-                    <h3>Your Chats</h3>
-                    <ul class="chat-list">
-                        <li
-                            ng-repeat="chatItem in chat.chatList"
-                            class="chat-item"
-                            ng-class="{'active': chatItem._id === chat.currentChat._id}"
-                            ng-click="chat.loadChat(chatItem._id)"
-                        >
-                            {{chatItem.title}}
-                        </li>
-                    </ul>
-                </div>
+      .auth-container {
+        max-width: 400px;
+        margin: 40px auto;
+        background: #ffffff;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      }
 
-                <!-- Chat area -->
-                <div class="chat-container">
-                    <div class="chat-history">
-                        <div
-                            ng-repeat="msg in chat.messages"
-                            class="message"
-                            ng-class="msg.role === 'user' ? 'user-message' : 'ai-message'"
-                        >
-                            {{msg.content}}
-                        </div>
-                    </div>
+      .auth-tabs {
+        display: flex;
+        margin-bottom: 20px;
+      }
 
-                    <form ng-submit="chat.sendMessage()" class="input-area">
-                        <input
-                            ng-model="chat.input"
-                            placeholder="Type a message..."
-                            ng-disabled="chat.loading"
-                        />
-                        <button type="submit" ng-disabled="chat.loading">
-                            {{chat.loading ? 'Sending...' : 'Send'}}
-                        </button>
-                    </form>
+      .auth-tab {
+        flex: 1;
+        text-align: center;
+        padding: 10px;
+        cursor: pointer;
+        border-bottom: 3px solid transparent;
+      }
 
-                    <div class="chat-actions" ng-if="chat.currentChat">
-                        <input
-                            type="text"
-                            ng-model="chat.currentChat.title"
-                            placeholder="Chat title"
-                        />
-                        <button
-                            ng-click="chat.updateChatTitle()"
-                            ng-disabled="chat.loading"
-                        >
-                            Update Title
-                        </button>
-                        <button
-                            ng-click="chat.deleteChat()"
-                            ng-disabled="chat.loading"
-                            style="background: #dc3545"
-                        >
-                            Delete Chat
-                        </button>
-                    </div>
-                </div>
-            </div>
+      .auth-tab.active {
+        font-weight: bold;
+        border-color: #007bff;
+      }
+
+      .form-group {
+        margin-bottom: 15px;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 5px;
+      }
+      input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+      }
+      button {
+        padding: 10px 20px;
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+      }
+      button:hover {
+        background: #0056b3;
+      }
+      button:disabled {
+        background: #cccccc;
+      }
+      .main-content {
+        flex: 1;
+        display: flex;
+        height: calc(100vh - 65px);
+        overflow: hidden;
+      }
+      .sidebar {
+        width: 250px;
+        background: #ffffff;
+        border-right: 1px solid #ddd;
+        padding: 15px;
+        overflow-y: auto;
+      }
+      .sidebar h3 {
+        margin-top: 10px;
+      }
+      .chat-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+      .chat-item {
+        padding: 10px;
+        cursor: pointer;
+        border-radius: 6px;
+        margin-bottom: 5px;
+      }
+      .chat-item:hover {
+        background: #f0f0f0;
+      }
+      .chat-item.active {
+        background: #e0f3ff;
+        font-weight: bold;
+      }
+      .chat-container {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        padding: 10px;
+      }
+      .chat-history {
+        flex: 1;
+        overflow-y: auto;
+        background: #f9f9f9;
+        padding: 10px;
+        border-radius: 10px;
+        display: flex;
+        flex-direction: column;
+      }
+      .message {
+        padding: 12px;
+        border-radius: 10px;
+        word-wrap: break-word;
+        max-width: 80%;
+        font-size: 15px;
+        line-height: 1.5;
+      }
+
+      .user-message {
+        background: #007bff;
+        color: white;
+        align-self: flex-end;
+      }
+
+      .ai-message {
+        background: #ffffff;
+        border: 1px solid #ddd;
+        align-self: flex-start;
+      }
+
+      .input-area {
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+      }
+
+      .input-area input {
+        flex: 1;
+        padding: 10px;
+      }
+
+      .chat-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+      }
+
+      .user-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .new-chat-btn {
+        width: 100%;
+        margin-bottom: 10px;
+        background: #28a745;
+      }
+
+      .new-chat-btn:hover {
+        background: #218838;
+      }
+
+      .chat-actions input {
+        flex: 1;
+      }
+
+      @media (max-width: 768px) {
+        .main-content {
+          flex-direction: column;
+        }
+
+        .sidebar {
+          width: 100%;
+          border-right: none;
+          border-bottom: 1px solid #ddd;
+        }
+
+        .chat-container {
+          padding: 10px;
+        }
+      }
+    </style>
+  </head>
+
+  <body ng-controller="ChatController as chat">
+    <div class="app-container">
+      <div class="header">
+        <h2>Ollama Chat</h2>
+        <div class="user-info" ng-if="chat.user">
+          <span>Hi, {{chat.user.username}}</span>
+          <button ng-click="chat.logout()">Logout</button>
+        </div>
+      </div>
+
+      <!-- AUTH SECTION -->
+      <div class="auth-container" ng-if="!chat.user">
+        <div class="auth-tabs">
+          <div
+            class="auth-tab"
+            ng-class="{'active': chat.authTab === 'login'}"
+            ng-click="chat.authTab = 'login'"
+          >
+            Login
+          </div>
+          <div
+            class="auth-tab"
+            ng-class="{'active': chat.authTab === 'register'}"
+            ng-click="chat.authTab = 'register'"
+          >
+            Register
+          </div>
         </div>
 
-        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
-        <script src="app.js"></script>
-    </body>
+        <form ng-submit="chat.login()" ng-if="chat.authTab === 'login'">
+          <div class="form-group">
+            <label>Username</label>
+            <input ng-model="chat.loginForm.username" type="text" required />
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input
+              ng-model="chat.loginForm.password"
+              type="password"
+              required
+            />
+          </div>
+          <button type="submit" ng-disabled="chat.authLoading">
+            {{chat.authLoading ? 'Logging in...' : 'Login'}}
+          </button>
+        </form>
+
+        <form ng-submit="chat.register()" ng-if="chat.authTab === 'register'">
+          <div class="form-group">
+            <label>Username</label>
+            <input
+              ng-model="chat.registerForm.username"
+              type="text"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input
+              ng-model="chat.registerForm.password"
+              type="password"
+              required
+            />
+          </div>
+          <button type="submit" ng-disabled="chat.authLoading">
+            {{chat.authLoading ? 'Registering...' : 'Register'}}
+          </button>
+        </form>
+      </div>
+
+      <!-- MAIN CHAT SECTION -->
+      <div class="main-content" ng-if="chat.user">
+        <div class="sidebar">
+          <button ng-click="chat.newChat()" class="new-chat-btn">
+            + New Chat
+          </button>
+          <h3>Your Chats</h3>
+          <ul class="chat-list">
+            <li
+              ng-repeat="chatItem in chat.chatList"
+              class="chat-item"
+              ng-class="{'active': chatItem._id === chat.currentChat._id}"
+              ng-click="chat.loadChat(chatItem._id)"
+            >
+              {{chatItem.title}}
+            </li>
+          </ul>
+        </div>
+
+        <div class="chat-container">
+          <div class="chat-history">
+            <div
+              ng-repeat="msg in chat.messages"
+              class="message"
+              ng-class="msg.role === 'user' ? 'user-message' : 'ai-message'"
+            >
+              {{msg.content}}
+            </div>
+          </div>
+
+          <form ng-submit="chat.sendMessage()" class="input-area">
+            <input
+              ng-model="chat.input"
+              placeholder="Type a message..."
+              ng-disabled="chat.loading"
+            />
+            <button type="submit" ng-disabled="chat.loading">
+              {{chat.loading ? 'Sending...' : 'Send'}}
+            </button>
+          </form>
+
+          <div class="chat-actions" ng-if="chat.currentChat">
+            <input
+              type="text"
+              ng-model="chat.currentChat.title"
+              placeholder="Chat title"
+            />
+            <button
+              ng-click="chat.updateChatTitle()"
+              ng-disabled="chat.loading"
+            >
+              Update Title
+            </button>
+            <button
+              ng-click="chat.deleteChat()"
+              ng-disabled="chat.loading"
+              style="background: #dc3545"
+            >
+              Delete Chat
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <script src="app.js"></script>
+  </body>
 </html>
