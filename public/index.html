@@ -8,15 +8,83 @@
                 place-items: center;
                 min-height: 100vh;
                 overflow: hidden;
+                font-family: Arial, sans-serif;
+            }
+            .app-container {
+                width: 1000px;
+                display: flex;
+                flex-direction: column;
+            }
+            .header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 10px;
+                margin-bottom: 10px;
+            }
+            .auth-container {
+                background: #f9f9f9;
+                padding: 20px;
+                border-radius: 5px;
+                margin-bottom: 20px;
+            }
+            .auth-tabs {
+                display: flex;
+                margin-bottom: 15px;
+            }
+            .auth-tab {
+                padding: 8px 15px;
+                cursor: pointer;
+                border-bottom: 2px solid transparent;
+            }
+            .auth-tab.active {
+                border-bottom: 2px solid #007bff;
+                font-weight: bold;
+            }
+            .form-group {
+                margin-bottom: 10px;
+            }
+            .form-group label {
+                display: block;
+                margin-bottom: 5px;
+            }
+            .main-content {
+                display: flex;
+                gap: 20px;
+            }
+            .sidebar {
+                min-width: 250px;
+                border: 1px solid #ccc;
+                padding: 10px;
+                border-radius: 5px;
+            }
+            .chat-list {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+                max-height: 400px;
+                overflow-y: auto;
+            }
+            .chat-item {
+                padding: 8px;
+                cursor: pointer;
+                border-bottom: 1px solid #eee;
+            }
+            .chat-item:hover {
+                background: #f5f5f5;
+            }
+            .chat-item.active {
+                background: #e6f7ff;
             }
             .chat-container {
-                width: 800px;
+                flex-grow: 1;
             }
             .chat-history {
-                height: 600px;
+                height: 400px;
                 overflow-y: auto;
                 border: 1px solid #ccc;
                 padding: 10px;
+                border-radius: 5px;
             }
             .message {
                 margin: 10px 0;
@@ -38,37 +106,180 @@
                 display: flex;
                 gap: 10px;
             }
+            input,
+            button {
+                padding: 8px;
+            }
             input {
                 flex-grow: 1;
-                padding: 8px;
             }
             button {
                 padding: 8px 20px;
+                background: #007bff;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+            button:hover {
+                background: #0069d9;
+            }
+            button:disabled {
+                background: #cccccc;
+            }
+            .chat-actions {
+                display: flex;
+                justify-content: space-between;
+                margin-top: 10px;
+            }
+            .user-info {
+                display: flex;
+                align-items: center;
+                gap: 10px;
             }
         </style>
     </head>
     <body ng-controller="ChatController as chat">
-        <div class="chat-container">
-            <div class="chat-history">
-                <div
-                    ng-repeat="msg in chat.messages"
-                    class="message"
-                    ng-class="msg.role === 'user' ? 'user-message' : 'ai-message'"
-                >
-                    {{msg.content}}
+        <div class="app-container">
+            <div class="header">
+                <h1>Ollama Chat</h1>
+                <div class="user-info" ng-if="chat.user">
+                    <span>Welcome, {{chat.user.username}}!</span>
+                    <button ng-click="chat.logout()">Logout</button>
                 </div>
             </div>
 
-            <form ng-submit="chat.sendMessage()" class="input-area">
-                <input
-                    ng-model="chat.input"
-                    placeholder="Type a message..."
-                    ng-disabled="chat.loading"
-                />
-                <button type="submit" ng-disabled="chat.loading">
-                    {{chat.loading ? 'Sending...' : 'Send'}}
-                </button>
-            </form>
+            <!-- Authentication -->
+            <div class="auth-container" ng-if="!chat.user">
+                <div class="auth-tabs">
+                    <div
+                        class="auth-tab"
+                        ng-class="{'active': chat.authTab === 'login'}"
+                        ng-click="chat.authTab = 'login'"
+                    >
+                        Login
+                    </div>
+                    <div
+                        class="auth-tab"
+                        ng-class="{'active': chat.authTab === 'register'}"
+                        ng-click="chat.authTab = 'register'"
+                    >
+                        Register
+                    </div>
+                </div>
+
+                <form ng-submit="chat.login()" ng-if="chat.authTab === 'login'">
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input
+                            ng-model="chat.loginForm.username"
+                            type="text"
+                            required
+                        />
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input
+                            ng-model="chat.loginForm.password"
+                            type="password"
+                            required
+                        />
+                    </div>
+                    <button type="submit" ng-disabled="chat.authLoading">
+                        {{chat.authLoading ? 'Processing...' : 'Login'}}
+                    </button>
+                </form>
+
+                <form
+                    ng-submit="chat.register()"
+                    ng-if="chat.authTab === 'register'"
+                >
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input
+                            ng-model="chat.registerForm.username"
+                            type="text"
+                            required
+                        />
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input
+                            ng-model="chat.registerForm.password"
+                            type="password"
+                            required
+                        />
+                    </div>
+                    <button type="submit" ng-disabled="chat.authLoading">
+                        {{chat.authLoading ? 'Processing...' : 'Register'}}
+                    </button>
+                </form>
+            </div>
+
+            <div class="main-content" ng-if="chat.user">
+                <!-- Sidebar with chat history -->
+                <div class="sidebar">
+                    <button ng-click="chat.newChat()" class="new-chat-btn">
+                        New Chat
+                    </button>
+                    <h3>Your Chats</h3>
+                    <ul class="chat-list">
+                        <li
+                            ng-repeat="chatItem in chat.chatList"
+                            class="chat-item"
+                            ng-class="{'active': chatItem._id === chat.currentChat._id}"
+                            ng-click="chat.loadChat(chatItem._id)"
+                        >
+                            {{chatItem.title}}
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Chat area -->
+                <div class="chat-container">
+                    <div class="chat-history">
+                        <div
+                            ng-repeat="msg in chat.messages"
+                            class="message"
+                            ng-class="msg.role === 'user' ? 'user-message' : 'ai-message'"
+                        >
+                            {{msg.content}}
+                        </div>
+                    </div>
+
+                    <form ng-submit="chat.sendMessage()" class="input-area">
+                        <input
+                            ng-model="chat.input"
+                            placeholder="Type a message..."
+                            ng-disabled="chat.loading"
+                        />
+                        <button type="submit" ng-disabled="chat.loading">
+                            {{chat.loading ? 'Sending...' : 'Send'}}
+                        </button>
+                    </form>
+
+                    <div class="chat-actions" ng-if="chat.currentChat">
+                        <input
+                            type="text"
+                            ng-model="chat.currentChat.title"
+                            placeholder="Chat title"
+                        />
+                        <button
+                            ng-click="chat.updateChatTitle()"
+                            ng-disabled="chat.loading"
+                        >
+                            Update Title
+                        </button>
+                        <button
+                            ng-click="chat.deleteChat()"
+                            ng-disabled="chat.loading"
+                            style="background: #dc3545"
+                        >
+                            Delete Chat
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>

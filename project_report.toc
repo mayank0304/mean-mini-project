@@ -1,0 +1,24 @@
+\contentsline {section}{\numberline {1}Introduction}{2}{}%
+\contentsline {section}{\numberline {2}Objectives}{2}{}%
+\contentsline {section}{\numberline {3}Technologies Used}{2}{}%
+\contentsline {section}{\numberline {4}System Architecture}{3}{}%
+\contentsline {subsection}{\numberline {4.1}Database Schema}{3}{}%
+\contentsline {subsubsection}{\numberline {4.1.1}User Schema}{3}{}%
+\contentsline {subsubsection}{\numberline {4.1.2}Chat Schema}{4}{}%
+\contentsline {section}{\numberline {5}Implementation Details}{5}{}%
+\contentsline {subsection}{\numberline {5.1}Authentication System}{5}{}%
+\contentsline {subsubsection}{\numberline {5.1.1}User Registration}{5}{}%
+\contentsline {subsubsection}{\numberline {5.1.2}User Login}{6}{}%
+\contentsline {subsection}{\numberline {5.2}Chat Management System}{7}{}%
+\contentsline {subsubsection}{\numberline {5.2.1}Creating a New Chat}{7}{}%
+\contentsline {subsubsection}{\numberline {5.2.2}Loading Existing Chats}{7}{}%
+\contentsline {subsection}{\numberline {5.3}Integration with Ollama API}{8}{}%
+\contentsline {section}{\numberline {6}Features}{9}{}%
+\contentsline {section}{\numberline {7}Key Components}{9}{}%
+\contentsline {subsection}{\numberline {7.1}Frontend Interface}{9}{}%
+\contentsline {subsection}{\numberline {7.2}AngularJS Controller}{10}{}%
+\contentsline {section}{\numberline {8}Deployment Process}{12}{}%
+\contentsline {section}{\numberline {9}Challenges and Solutions}{13}{}%
+\contentsline {section}{\numberline {10}Future Enhancements}{13}{}%
+\contentsline {section}{\numberline {11}Application Screenshots}{14}{}%
+\contentsline {section}{\numberline {12}Conclusion}{15}{}%
